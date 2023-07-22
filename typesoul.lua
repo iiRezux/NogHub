@@ -311,14 +311,21 @@ spawn(function()
             if currentNPC ~= nil then
                 if char_valid() then
                     if target_npc == nil then
-                        if char_valid() then
-                            if Self.Character.Humanoid.HipHeight ~= 0 then
-                                Self.Character.Humanoid.HipHeight = 0
+                        spawn(function()
+                            if char_valid() then
+                                if Self.Character.Humanoid.HipHeight ~= 0 then
+                                    Self.Character.Humanoid.HipHeight = 0
+                                end
+                                for i,v in pairs(Self.Character:GetChildren()) do
+                                    if v:IsA("BasePart") and v.CanCollide == false then
+                                        v.CanCollide = true
+                                    end
+                                end
+                                if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
+                                    Self.Character.HumanoidRootPart.TweenHelp:Destroy()
+                                end
                             end
-                            if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
-                                Self.Character.HumanoidRootPart.TweenHelp:Destroy()
-                            end
-                        end
+                        end)
                         if get_nearest_npc() ~= nil then
                             target_npc = get_nearest_npc()
                         end
@@ -441,7 +448,17 @@ spawn(function()
                                     table.insert(currentSoulsNearby, v)
                                 else
                                     if closest_body_part == nil then
-                                        eatingSoulState = false
+                                        spawn(function()
+                                            eatingSoulState = false
+                                            if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") then
+                                                Self.Character.HumanoidRootPart.TweenEatHelp:Destroy()
+                                            end
+                                            for i,v in pairs(Self.Character:GetChildren()) do
+                                                if v:IsA("BasePart") and v.CanCollide == false then
+                                                    v.CanCollide = true
+                                                end
+                                            end
+                                        end)
                                         if filter_closest(currentSoulsNearby) ~= nil then
                                             closest_body_part = filter_closest(currentSoulsNearby)
                                         end
@@ -474,9 +491,6 @@ spawn(function()
                                             end
                                         else
                                             closest_body_part = nil
-                                            if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") then
-                                                Self.Character.HumanoidRootPart.TweenEatHelp:Destroy()
-                                            end
                                         end
                                     end
                                     
