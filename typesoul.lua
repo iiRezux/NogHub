@@ -10,6 +10,9 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Green
 local Players = game:GetService("Players")
 local ESP = loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-ESP-Library-9570", true))("there are cats in your walls let them out let them out let them out")
 
+ESP.Settings.Tracers.Enabled = false
+ESP.Settings.Boxes.Enabled = false
+
 local venyx = library.new("Nog hub", 5013109572)
 
 --Main Variables
@@ -18,7 +21,6 @@ local TweenTPSpeed
 
 --Local Connections
 local JumpPowerConnection;
-local AntiStunConnection;
 
 --Main functions
 local function char_valid()
@@ -27,6 +29,32 @@ local function char_valid()
             if Self.Character:FindFirstChild("Humanoid") then
                 return true
             end
+        end
+    end
+end
+
+local function Tween_Call(Pos, Offset, Rotation, tweenstore)
+    local Offset = Offset or Vector3.new(0,0,0)
+    local Rotation = Rotation or 0
+
+    local adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(Rotation), 0, 0)
+    local tweenservice = game:GetService("TweenService")
+    local duration;
+    duration = (Self.Character.HumanoidRootPart.Position - Pos + Offset).magnitude / TweenTPSpeed
+    local tween = tweenservice:Create(Self.Character.HumanoidRootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), { CFrame = adjustoffset })
+    tween:Play()
+    if tweenstore then
+        if type(tweenstore) == "table" then
+            table.insert(tweenstore, tween)
+            tween.Completed:Connect(function()
+                spawn(function()
+                    for i,v in pairs(tweenstore) do
+                        if v == tween then
+                            tweenstore[i] = nil
+                        end
+                    end
+                end)
+            end)
         end
     end
 end
@@ -151,8 +179,11 @@ hipheightsection:addToggle("Hip Height", nil, function(value)
     end
 end)
 
-hipheightsection:addSlider("Height", 0, 0, 500, function(value)
+hipheightsection:addSlider("Height", 4, 4, 500, function(value)
     hipheightheightvalue = value
+    if hipheightheightvalue == 4 then
+        hipheightheightvalue = 4.099999
+    end
 end)
 
 spawn(function()
@@ -249,6 +280,12 @@ autofarmsection:addToggle("Auto Farm NPC", nil, function(value)
             if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
                 Self.Character.HumanoidRootPart.TweenHelp:Destroy()
             end
+            for i,v in pairs(Self.Character:GetChildren()) do
+                if v:IsA("BasePart") and v.CanCollide == false then
+                    v.CanCollide = true
+                end
+            end
+            Self.Character.Humanoid.HipHeight = 4.0999999
         end
     end
 end)
@@ -259,7 +296,7 @@ autofarmsection:addSlider("Farm Offset", 0, -70, 70, function(value)
     FarmOffset = Vector3.new(0, value, 0)
 end)
 
-local rotationVal = 90
+local rotationVal = 0
 
 autofarmsection:addSlider("Rotation", 0, -180, 180, function(value)
     rotationVal = value
@@ -286,12 +323,45 @@ local function get_nearest_npc()
     return npc
 end
 
+local function check_valibilaty(npc)
+    for i,v in pairs(game:GetService("Workspace").Entities:GetChildren()) do
+        if npc == v then
+            return v
+        end
+    end
+end
+
 local target_npc;
+spawn(function() --Nearest Config
+    while wait() do
+        if autofarmnpctoggle then
+            if target_npc == nil then
+                if get_nearest_npc() ~= nil then
+                    target_npc = get_nearest_npc()
+                end
+            else
+                if get_nearest_npc() == nil then
+                    target_npc = nil
+                else
+                    if check_valibilaty(target_npc) ~= nil then
+                        if check_valibilaty(target_npc):FindFirstChild("HumanoidRootPart") == nil or check_valibilaty(target_npc):FindFirstChild("Humanoid") == nil then
+                            target_npc = nil
+                        else
+                            if check_valibilaty(target_npc).Humanoid.Health == 0 then
+                                target_npc = nil
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
 local autoEatSoulToggle;
 local eatingSoulState;
 local autoEatSoulRange;
 local function Auto_Attack(typer)
-    if typer == "M1" then
+    if typer == "M1" or typer == nil then
         game:GetService('VirtualInputManager'):SendMouseButtonEvent(10, 10, 0, true, game, 0)
         game:GetService('VirtualInputManager'):SendMouseButtonEvent(10, 10, 0, false, game, 0)
     elseif typer == "Critical" then
@@ -304,77 +374,62 @@ local function Auto_Attack(typer)
 end
 
 local attackTypeChoosen;
+local currentTween = {}
 
 spawn(function()
     game:GetService("RunService").RenderStepped:Connect(function()
         if autofarmnpctoggle then
             if currentNPC ~= nil then
                 if char_valid() then
-                    if target_npc == nil then
+                    if target_npc ~= nil then
                         spawn(function()
                             if char_valid() then
-                                if Self.Character.Humanoid.HipHeight ~= 0 then
-                                    Self.Character.Humanoid.HipHeight = 0
+                                if char_valid() == nil then
+                                    return
+                                end
+                                if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") == nil then
+                                    local bodv = Instance.new("BodyVelocity", Self.Character.HumanoidRootPart)
+                                    bodv.Name = "TweenHelp"
+                                    bodv.Velocity = Vector3.new(0,0,0)
+                                    bodv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                                    bodv.P = 1000
+                                end
+                                if (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position).magnitude <= 70 and eatingSoulState ~= true then
+                                    Auto_Attack(attackTypeChoosen)
+                                end
+                                if char_valid() then
+                                    Self.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
+                                    no_clip()
+                                    no_stun()
+                                end
+                            end
+                        end)
+                        if eatingSoulState ~= true then
+                            if (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position).magnitude < 15 then
+                                if #currentTween ~= 0 then
+                                    for i,v in pairs(currentTween) do
+                                        v:Cancel()
+                                        v:Destroy()
+                                    end
+                                end
+                                Self.Character.HumanoidRootPart.CFrame = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
+                            else
+                                Tween_Call(target_npc.HumanoidRootPart.Position, FarmOffset, rotationVal, currentTween)
+                            end
+                        end
+                    else
+                        spawn(function()
+                            if char_valid() then
+                                if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
+                                    Self.Character.HumanoidRootPart.TweenHelp:Destroy()
                                 end
                                 for i,v in pairs(Self.Character:GetChildren()) do
                                     if v:IsA("BasePart") and v.CanCollide == false then
                                         v.CanCollide = true
                                     end
                                 end
-                                if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
-                                    Self.Character.HumanoidRootPart.TweenHelp:Destroy()
-                                end
                             end
                         end)
-                        if get_nearest_npc() ~= nil then
-                            target_npc = get_nearest_npc()
-                        end
-                    elseif target_npc ~= nil then
-                        if target_npc ~= get_nearest_npc() then
-                            target_npc = nil
-                            return
-                        end
-                        if target_npc:FindFirstChild("Humanoid") then
-                            if target_npc.Humanoid.Health <= 0 then
-                                target_npc = nil
-                            else
-                                spawn(function()
-                                    no_clip()
-                                    no_stun()
-                                    if char_valid() then
-                                        Self.Character.HumanoidRootPart.Velocity = Vector3.new(0,0,0)
-                                        if Self.Character.HumanoidRootPart.Size ~= Vector3.new(50, 50, 50) then
-                                            Self.Character.HumanoidRootPart.Size = Vector3.new(50, 50, 50)
-                                            Self.Character.HumanoidRootPart.CanCollide = false
-                                            Self.Character.HumanoidRootPart.Transparency = 1
-                                        end
-                                    end
-                                end)
-                                if (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position).magnitude < 15 then
-                                    Self.Character.HumanoidRootPart.CFrame = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
-                                    spawn(function()
-                                        Auto_Attack(attackTypeChoosen)
-                                    end)
-                                else
-                                    if eatingSoulState ~= true then
-                                        local adjustoffset = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
-                                        local tweenservice = game:GetService("TweenService")
-                                        local duration = (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position).magnitude / TweenTPSpeed
-                                        local tween = tweenservice:Create(Self.Character.HumanoidRootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), { CFrame = adjustoffset })
-                                        if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") == nil then
-                                            local bodv = Instance.new("BodyVelocity", Self.Character.HumanoidRootPart)
-                                            bodv.Name = "TweenHelp"
-                                            bodv.Velocity = Vector3.new(0,0,0)
-                                            bodv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
-                                            bodv.P = 1000
-                                        end
-                                        tween:Play()
-                                    end
-                                end
-                            end
-                        else
-                            target_npc = nil
-                        end
                     end
                 end
             end
@@ -393,11 +448,14 @@ local bodypartsection = autofarmpage:addSection("Auto Eat")
 
 bodypartsection:addToggle("Auto Eat BodyParts", nil , function(v)
     autoEatSoulToggle = v
+    if autoEatSoulToggle == false then
+        eatingSoulState = false
+    end
 end)
 
 autoEatSoulRange = 300
 
-bodypartsection:addSlider("Eat Range", 300, 50, 1000 , function(v)
+bodypartsection:addSlider("Eat Range", 300, 50, 10000 , function(v)
     autoEatSoulRange = v
 end)
 
@@ -426,18 +484,19 @@ local function filter_closest(thetable)
     return closest
 end
 
-local function tweentopos(pos)
-    local tweenservice = game:GetService("TweenService")
-    local duration = (Self.Character.HumanoidRootPart.Position - pos).magnitude / TweenTPSpeed
-    local tween = tweenservice:Create(Self.Character.HumanoidRootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), { CFrame = CFrame.new(pos) })
-    tween:Play()
+local function click_b()
+    local virtualUser = game:GetService('VirtualUser')
+    virtualUser:CaptureController()
+    virtualUser:SetKeyDown('0x62')
+    wait(0.2)
+    virtualUser:SetKeyUp('0x62')
 end
 
 local currentSoulsNearby = {}
 local closest_body_part;
 
 spawn(function()
-    while wait() do
+    game:GetService("RunService").RenderStepped:Connect(function()
         if autoEatSoulToggle then
             for i,v in pairs(game:GetService("Workspace").Entities:GetChildren()) do
                 if v:FindFirstChild("Humanoid") and v:FindFirstChild("HumanoidRootPart") then
@@ -448,14 +507,16 @@ spawn(function()
                                     table.insert(currentSoulsNearby, v)
                                 else
                                     if closest_body_part == nil then
+                                        eatingSoulState = false
                                         spawn(function()
-                                            eatingSoulState = false
-                                            if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") then
-                                                Self.Character.HumanoidRootPart.TweenEatHelp:Destroy()
-                                            end
-                                            for i,v in pairs(Self.Character:GetChildren()) do
-                                                if v:IsA("BasePart") and v.CanCollide == false then
-                                                    v.CanCollide = true
+                                            if char_valid() then
+                                                if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") then
+                                                    Self.Character.HumanoidRootPart.TweenEatHelp:Destroy()
+                                                end
+                                                for i,v in pairs(Self.Character:GetChildren()) do
+                                                    if v:IsA("BasePart") and v.CanCollide == false then
+                                                        v.CanCollide = true
+                                                    end
                                                 end
                                             end
                                         end)
@@ -465,7 +526,7 @@ spawn(function()
                                     elseif closest_body_part ~= nil then
                                         if closest_body_part:FindFirstChild("HumanoidRootPart") ~= nil and closest_body_part:FindFirstChild("Humanoid") and closest_body_part.Humanoid.Health == 0 then
                                             eatingSoulState = true
-                                            if (Self.Character.HumanoidRootPart.Position - closest_body_part.HumanoidRootPart.Position).magnitude > 6 then
+                                            if (Self.Character.HumanoidRootPart.Position - closest_body_part.HumanoidRootPart.Position).magnitude > 2 then
                                                 spawn(function()
                                                     no_clip()
                                                     if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") == nil then
@@ -476,24 +537,19 @@ spawn(function()
                                                         bocv.P = 1000
                                                     end
                                                 end)
-                                                tweentopos(closest_body_part.HumanoidRootPart.Position)
+                                                Tween_Call(closest_body_part.HumanoidRootPart.Position)
                                             else
                                                 if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") then
                                                     Self.Character.HumanoidRootPart.TweenEatHelp:Destroy()
                                                 end
                                                 spawn(function()
-                                                    local virtualUser = game:GetService('VirtualUser')
-                                                    virtualUser:CaptureController()
-                                                    virtualUser:SetKeyDown('0x62')
-                                                    wait(0.2)
-                                                    virtualUser:SetKeyUp('0x62')
+                                                    click_b()
                                                 end)
                                             end
                                         else
                                             closest_body_part = nil
                                         end
                                     end
-                                    
                                 end
                             end
                         end
@@ -501,7 +557,7 @@ spawn(function()
                 end
             end
         end
-    end
+    end)
 end)
 
 local teleportPage = venyx:addPage("Teleport")
@@ -545,6 +601,7 @@ tweentp:addDropdown("Teleport to area", {"Obby Spawn", "Obby End"}, function(opt
                     bodv.Name = "TweenHelp"
                     bodv.Velocity = Vector3.new(0,0,0)
                     bodv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                    bodv.P = 1000
                 end
                 tween:Play()
                 tween.Completed:Connect(function()
@@ -560,7 +617,7 @@ tweentp:addDropdown("Teleport to area", {"Obby Spawn", "Obby End"}, function(opt
 end)
 
 local visualPage = venyx:addPage("Visual", 5012544693)
-local espSection = visualPage:addSection("ESP")
+local espSection = visualPage:addSection("ESP Player")
 
 espSection:addToggle("Player ESP", nil, function(v)
     ESP.Enabled = v
@@ -585,6 +642,22 @@ espSection:addToggle("Player ESP", nil, function(v)
             end
          end)
     end
+end)
+
+espSection:addSlider("Max Distance", 1000, 100, 10000, function(v)
+    ESP.Settings.MaxDistance = v
+end)
+
+espSection:addToggle("Show Health", nil, function(v)
+    ESP.Settings.Names.Health = v
+end)
+
+espSection:addToggle("Tracers", nil, function(v)
+    ESP.Settings.Tracers.Enabled = v
+end)
+
+espSection:addToggle("Boxes", nil, function(v)
+    ESP.Settings.Boxes.Enabled = v
 end)
 
 local settingsPage = venyx:addPage("Settings", 5012544693)
