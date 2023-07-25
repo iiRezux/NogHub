@@ -2,6 +2,7 @@
 local ESP = {
     Enabled = false,
     Boxes = true,
+    Health = true;
     BoxShift = CFrame.new(0,-1.5,0),
 	BoxSize = Vector3.new(4,6,0),
     Color = Color3.fromRGB(255, 170, 0),
@@ -342,11 +343,19 @@ local function CharAdded(char)
         ev = char.ChildAdded:Connect(function(c)
             if c.Name == "HumanoidRootPart" then
                 ev:Disconnect()
-                ESP:Add(char, {
-                    Name = p.Name,
-                    Player = p,
-                    PrimaryPart = c
-                })
+                if ESP.Health == true then
+                    ESP:Add(char, {
+                        Name = p.Name.."\n["..tostring(char.Humanoid.Health).."/"..tostring(char.Humanoid.MaxHealth).."]",
+                        Player = p,
+                        PrimaryPart = c
+                    })
+                else
+                    ESP:Add(char, {
+                        Name = p.Name,
+                        Player = p,
+                        PrimaryPart = c
+                    })
+                end
             end
         end)
     else
