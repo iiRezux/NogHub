@@ -1077,7 +1077,7 @@ local ps = game:GetService("Players")
 local lp = ps.LocalPlayer
 local rs = game:GetService("RunService")
 local ESPPlayerToggle = false
-local ESPTextOutlineSettings;
+local ESPPlayerMaxDistance = 10000;
 
 local function esp(p,cr)
     local h = cr:WaitForChild("Humanoid")
@@ -1135,7 +1135,7 @@ local function esp(p,cr)
 
     c1 = rs.RenderStepped:Connect(function()
         local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
-        if hrp_onscreen and ESPPlayerToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMaxDistance then
+        if hrp_onscreen and ESPPlayerToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPPlayerMaxDistance then
             text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
             text.Visible = true
             text.Color = PlayerESPColor
@@ -1191,6 +1191,10 @@ espSection:addToggle("Player ESP", nil, function(v)
     end
 end)
 
+espSection:addSlider("Max Distance", 10000, 0, 10000, function(v)
+    ESPPlayerMaxDistance = v
+end)
+
 espSection:addToggle("Show health", true, function(v)
     ESPPlayerShowHealth = v
 end)
@@ -1205,6 +1209,7 @@ local MOBEspToggle;
 local MobESPColor = Color3.fromRGB(226, 35, 35)
 local ESPMobShowDistance = true
 local ESPMobShowHealth = true
+local ESPMobMaxDistance = 10000;
 
 local function esp_mob(cr)
     local h = cr:WaitForChild("Humanoid")
@@ -1247,7 +1252,7 @@ local function esp_mob(cr)
     end
 
     c4 = game.workspace.Entities.ChildRemoved:Connect(function(b)
-        if b == cr then
+        if b.Name == cr.Name then
             dc()
         end
     end)
@@ -1264,7 +1269,7 @@ local function esp_mob(cr)
 
     c1 = rs.RenderStepped:Connect(function()
         local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
-        if hrp_onscreen and MOBEspToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMaxDistance then
+        if hrp_onscreen and MOBEspToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMobMaxDistance then
             text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
             text.Visible = true
             text.Color = MobESPColor
@@ -1307,7 +1312,7 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
             if p ~= nil then
                 if Is_Player(p.Name) ~= true and MOBEspToggle and string.find(p.Name, "_") then
                     local extractedString = p.Name:match("(.+)_")
-                    if extractedString ~= "FlashClone" and p:FindFirstChild("Humanoid") and p.Humanoid.Health ~= 0 then
+                    if extractedString ~= "FlashClone" and p:FindFirstChild("Humanoid") then
                         esp_mob(p)
                     end
                 end
@@ -1327,6 +1332,10 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
     end
 end)
 
+ESPMobSection:addSlider("Max Distance", 10000, 0, 10000, function(v)
+    ESPMobMaxDistance = v
+end)
+
 ESPMobSection:addToggle("Show health", true, function(v)
     ESPMobShowHealth = v
 end)
@@ -1340,7 +1349,8 @@ local ESPMissionSection = visualPage:addSection("Mission ESP")
 local activatedMissionESP;
 local MissionESPToggle;
 local ESPMissionDistance;
-local MissionColor = Color3.fromRGB(233, 255, 0)
+local MissionESPColorSelected = Color3.fromRGB(233, 255, 0)
+local ESPMissionMaxDistance = 10000;
 
 local function esp_mission(cr)
     local text = Drawing.new("Text")
@@ -1380,10 +1390,10 @@ local function esp_mission(cr)
 
     c1 = rs.RenderStepped:Connect(function()
         local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(cr.Position)
-        if hrp_onscreen and MissionESPToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - cr.Position).magnitude <= ESPMaxDistance then
+        if hrp_onscreen and MissionESPToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - cr.Position).magnitude <= ESPMissionMaxDistance then
             text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
             text.Visible = true
-            text.Color = MissionColor
+            text.Color = MissionESPColorSelected
             if ESPMissionDistance then
                 if char_valid() then
                     text.Text = "Mission\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - cr.Position).magnitude)).."m"
@@ -1423,6 +1433,10 @@ ESPMissionSection:addToggle("Mission ESP", nil, function(v)
         
         game:GetService("Workspace").NPCs.MissionNPC.ChildAdded:Connect(mission_added)
     end
+end)
+
+ESPMissionSection:addSlider("Max Distance", 10000, 0, 10000, function(v)
+    ESPMissionMaxDistance = v
 end)
 
 ESPMissionSection:addToggle("Show distance", nil, function(v)
@@ -1560,10 +1574,6 @@ end)
 
 local espSettingsSector = visualPage:addSection("ESP Settings")
 
-espSettingsSector:addSlider("Max Distance", 1000, 100, 10000, function(v)
-    ESPMaxDistance = v
-end)
-
 espSettingsSector:addColorPicker("Player ESP", Color3.fromRGB(3, 231, 107), function(v)
     PlayerESPColor = v
 end)
@@ -1574,6 +1584,10 @@ end)
 
 espSettingsSector:addColorPicker("Mission ESP", Color3.fromRGB(3, 231, 107), function(v)
     MissionESPColorSelected = v
+end)
+
+espSettingsSector:addColorPicker("NPC ESP", Color3.new(126, 3, 231), function(v)
+    NPCColorESP = v
 end)
 
 espSettingsSector:addToggle("Text Outline", nil, function(v)
