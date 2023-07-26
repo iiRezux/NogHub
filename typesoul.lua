@@ -184,8 +184,8 @@ hipheightsection:addToggle("Hip Height", nil, function(value)
     hipHeightToggle = value
     if hipHeightToggle == false then
         if char_valid() then
-            if Self.Character.Humanoid.HipHeight ~= 0 then
-                Self.Character.Humanoid.HipHeight = 0
+            if Self.Character.Humanoid.HipHeight ~= 4.099999 then
+                Self.Character.Humanoid.HipHeight = 4.099999
             end
         end
     end
