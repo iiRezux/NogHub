@@ -47,13 +47,8 @@ local rotationVal = 0
 local function Tween_Call(Pos, Offset, Rotation, tweenstore)
     local Offset = Offset or Vector3.new(0,0,0)
     local Rotation = Rotation or 0
-    local adjustoffset;
 
-    if Rotation and Rotation == rotationVal then
-        adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
-    else
-        adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(Rotation), 0, 0)
-    end
+    local adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(Rotation), 0, 0)
     local tweenservice = game:GetService("TweenService")
     local duration;
     duration = (Self.Character.HumanoidRootPart.Position - Pos + Offset).magnitude / TweenTPSpeed
@@ -581,7 +576,26 @@ spawn(function()
                                     end
                                     Self.Character.HumanoidRootPart.CFrame = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
                                 else
-                                    Tween_Call(target_npc.HumanoidRootPart.Position, FarmOffset, rotationVal, currentTween)
+                                    local adjustoffset = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
+                                    local tweenservice = game:GetService("TweenService")
+                                    local duration = (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position + FarmOffset).magnitude / TweenTPSpeed
+                                    local tween = tweenservice:Create(Self.Character.HumanoidRootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), { CFrame = adjustoffset })
+                                    tween:Play()
+                                    if currentTween then
+                                        if type(currentTween) == "table" then
+                                            table.insert(currentTween, tween)
+                                            local tweenco
+                                            tweenco = tween.Completed:Connect(function()
+                                                for i,v in pairs(currentTween) do
+                                                    if v == tween then
+                                                        currentTween[i] = nil
+                                                        tweenco:Disconnect()
+                                                        tweenco = nil
+                                                    end
+                                                end
+                                            end)
+                                        end
+                                    end
                                 end
                             end
                         end
@@ -672,6 +686,9 @@ local function filter_closest(thetable)
     for i,v in pairs(thetable) do
         if char_valid() then
             if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") and v.Humanoid.Health == 0 then
+                if v == nil or v:FindFirstChild("HumanoidRootPart") == nil then
+                    return
+                end
                 local magn = (Self.Character.HumanoidRootPart.Position - v.HumanoidRootPart.Position).magnitude
                 if magn < dist then
                     dist = magn
@@ -692,6 +709,17 @@ local function click_b()
 end
 
 local currentSoulsNearby = {}
+spawn(function()
+    while wait() do
+        if autoEatSoulToggle and #currentSoulsNearby ~= 0 then
+            for i,v in pairs(currentSoulsNearby) do
+                if not check_valibilaty(v) or v:FindFirstChild("HumanoidRootPart") == nil or v:FindFirstChild("Humanoid") == nil or v.Humanoid.Health ~= 0 then
+                    currentSoulsNearby[i] = nil
+                end
+            end
+        end
+    end
+end)
 local closest_body_part;
 
 spawn(function()
@@ -720,7 +748,6 @@ spawn(function()
                                             eatingSoulState = true
                                             if (Self.Character.HumanoidRootPart.Position - closest_body_part.HumanoidRootPart.Position).magnitude > 15 then
                                                 if char_valid() then
-                                                    no_clip()
                                                     if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") == nil then
                                                         local bocv = Instance.new("BodyVelocity", Self.Character.HumanoidRootPart)
                                                         bocv.Name = "TweenEatHelp"
@@ -728,6 +755,7 @@ spawn(function()
                                                         bocv.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
                                                         bocv.P = 1000
                                                     end
+                                                    no_clip()
                                                     Tween_Call(closest_body_part.HumanoidRootPart.Position)
                                                 end
                                             else
@@ -1174,16 +1202,20 @@ espSection:addToggle("Player ESP", nil, function(v)
         activatedESPPlayer = true
         local function p_added(p)
             if Is_Player(p.Name) then
-                if p:FindFirstChild("HumanoidRootPart") and p:FindFirstChild("Humanoid") then
-                    esp(game.Players[p.Name], p)
+                if p.Name ~= Self.Name then
+                    if p:FindFirstChild("HumanoidRootPart") and p:FindFirstChild("Humanoid") then
+                        esp(game.Players[p.Name], p)
+                    end
                 end
             end
         end
         
         for i,v in pairs(game.workspace.Entities:GetChildren()) do
             if Is_Player(v.Name) then
-                if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
-                    esp(game.Players[v.Name], v)
+                if v.Name ~= Self.Name then
+                    if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
+                        esp(game.Players[v.Name], v)
+                    end
                 end
             end
         end
