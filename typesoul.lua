@@ -31,6 +31,12 @@ local TweenTPSpeed
 --Local Connections
 local JumpPowerConnection;
 
+--Variables
+local WalkSpeedToggle;
+local WalkSpeedSpeed;
+local JumpPowerToggle;
+local JumpPowerHeight;
+
 --Main functions
 local function char_valid()
     if Self.Character ~= nil then
@@ -85,10 +91,13 @@ local function no_stun() --Attachment
                 v:Destroy()
             end
         end
-        for i,v in pairs(Self.Character.Head:GetDescendants()) do
-            if v.Name == "BodyVelocity" then
+        for i,v in pairs(Self.Character.Head:GetChildren()) do
+            if v.Name == "BodyVelocity" or v:IsA("BodyVelocity") then
                 v:Destroy()
             end
+        end
+        if not WalkSpeedToggle and Self.Character.Humanoid.WalkSpeed == 0 then
+            Self.Character.Humanoid.WalkSpeed = Self.Character:GetAttribute("BaseWalkspeed")
         end
     end
 end
@@ -107,12 +116,6 @@ local themes = {
 local page = venyx:addPage("Player", 5012544693)
 local walkspeedsection = page:addSection("Walkspeed")
 local jumppowersection = page:addSection("JumpPower")
-
---Variables
-local WalkSpeedToggle;
-local WalkSpeedSpeed;
-local JumpPowerToggle;
-local JumpPowerHeight;
 
 walkspeedsection:addToggle("Walk Speed", nil, function(value)
     WalkSpeedToggle = value
@@ -438,11 +441,6 @@ autofarmsection:addToggle("Auto Farm NPC", nil, function(value)
             if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
                 Self.Character.HumanoidRootPart.TweenHelp:Destroy()
             end
-            for i,v in pairs(Self.Character:GetChildren()) do
-                if v:IsA("BasePart") and v.CanCollide == false then
-                    v.CanCollide = true
-                end
-            end
         end
     end
 end)
@@ -458,9 +456,9 @@ autofarmsection:addSlider("Rotation", 0, -180, 180, function(value)
     rotationVal = value
 end)
 
-local MobRangeAutoFarm = 10000
+local MobRangeAutoFarm = 30000
 
-autofarmsection:addSlider("Mob Range", 10000, 50, 10000, function(v)
+autofarmsection:addSlider("Mob Range", 30000, 50, 30000, function(v)
     MobRangeAutoFarm = v
 end)
 
@@ -499,7 +497,7 @@ spawn(function() --Nearest Config
         if autofarmnpctoggle then
             if char_valid() then
                 if target_npc == nil then
-                    if get_nearest_npc() ~= nil then
+                    if get_nearest_npc() ~= nil and string.find(get_nearest_npc().Name, currentNPC) then
                         if (Self.Character.HumanoidRootPart.Position - get_nearest_npc().HumanoidRootPart.Position).magnitude < MobRangeAutoFarm then
                             target_npc = get_nearest_npc()
                         end
@@ -509,7 +507,7 @@ spawn(function() --Nearest Config
                         target_npc = nil
                     else
                         if check_valibilaty(target_npc) ~= nil then
-                            if check_valibilaty(target_npc):FindFirstChild("HumanoidRootPart") == nil or check_valibilaty(target_npc):FindFirstChild("Humanoid") == nil then
+                            if not string.find(target_npc.Name, currentNPC) and check_valibilaty(target_npc):FindFirstChild("HumanoidRootPart") == nil or check_valibilaty(target_npc):FindFirstChild("Humanoid") == nil then
                                 target_npc = nil
                             else
                                 if check_valibilaty(target_npc).Humanoid.Health == 0 or (Self.Character.HumanoidRootPart.Position - get_nearest_npc().HumanoidRootPart.Position).magnitude > MobRangeAutoFarm then
@@ -567,47 +565,17 @@ spawn(function()
                         end
                         if eatingSoulState ~= true then
                             if target_npc ~= nil and char_valid() then
-                                if (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position).magnitude < 15 then
-                                    if #currentTween ~= 0 then
-                                        for i,v in pairs(currentTween) do
-                                            v:Cancel()
-                                            v:Destroy()
-                                        end
-                                    end
-                                    Self.Character.HumanoidRootPart.CFrame = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
-                                else
-                                    local adjustoffset = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
-                                    local tweenservice = game:GetService("TweenService")
-                                    local duration = (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position + FarmOffset).magnitude / TweenTPSpeed
-                                    local tween = tweenservice:Create(Self.Character.HumanoidRootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), { CFrame = adjustoffset })
-                                    tween:Play()
-                                    if currentTween then
-                                        if type(currentTween) == "table" then
-                                            table.insert(currentTween, tween)
-                                            local tweenco
-                                            tweenco = tween.Completed:Connect(function()
-                                                for i,v in pairs(currentTween) do
-                                                    if v == tween then
-                                                        currentTween[i] = nil
-                                                        tweenco:Disconnect()
-                                                        tweenco = nil
-                                                    end
-                                                end
-                                            end)
-                                        end
-                                    end
-                                end
+                                local adjustoffset = CFrame.new(target_npc.HumanoidRootPart.Position + FarmOffset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
+                                local tweenservice = game:GetService("TweenService")
+                                local duration = (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position + FarmOffset).magnitude / TweenTPSpeed
+                                local tween = tweenservice:Create(Self.Character.HumanoidRootPart, TweenInfo.new(duration, Enum.EasingStyle.Linear, Enum.EasingDirection.Out), { CFrame = adjustoffset })
+                                tween:Play()
                             end
                         end
                     else
                         if char_valid() then
                             if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") then
                                 Self.Character.HumanoidRootPart.TweenHelp:Destroy()
-                            end
-                            for i,v in pairs(Self.Character:GetChildren()) do
-                                if v:IsA("BasePart") and v.CanCollide == false then
-                                    v.CanCollide = true
-                                end
                             end
                         end
                     end
@@ -1344,7 +1312,7 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
         
         for i,v in pairs(game.workspace.Entities:GetChildren()) do
             if v:IsA("Model") then
-                if Is_Player(v.Name) ~= true and MOBEspToggle and string.find(v.Name, "_") then
+                if Is_Player(v.Name) ~= true and MOBEspToggle and string.find(v.Name, "_") and v:FindFirstChild("HumanoidRootPart") then
                     local extractedString = v.Name:match("(.+)_")
                     if extractedString ~= "FlashClone" then
                         esp_mob(v)
@@ -1353,13 +1321,13 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
             end
         end
         
-        game.workspace.Entities.ChildAdded:Connect(function(p)
+        game.workspace.Entities.DescendantAdded:Connect(function(p)
             if p ~= nil then
-                if p:IsA("Model") then
-                    if Is_Player(p.Name) ~= true and MOBEspToggle and string.find(p.Name, "_") then
-                        local extractedString = p.Name:match("(.+)_")
+                if p.Name == "HumanoidRootPart" then
+                    if Is_Player(p.Parent) ~= true and MOBEspToggle and string.find(p.Parent.Name, "_") then
+                        local extractedString = p.Parent.Name:match("(.+)_")
                         if extractedString ~= "FlashClone" then
-                            esp_mob(p)
+                            esp_mob(p.Parent)
                         end
                     end
                 end
