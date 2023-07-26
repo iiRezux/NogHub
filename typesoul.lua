@@ -1077,7 +1077,7 @@ local ps = game:GetService("Players")
 local lp = ps.LocalPlayer
 local rs = game:GetService("RunService")
 local ESPPlayerToggle = false
-local ESPPlayerMaxDistance = 10000;
+local ESPPlayerMaxDistance = 30000;
 
 local function esp(p,cr)
     local h = cr:WaitForChild("Humanoid")
@@ -1173,25 +1173,26 @@ espSection:addToggle("Player ESP", nil, function(v)
     if activatedESPPlayer ~= true and v then
         activatedESPPlayer = true
         local function p_added(p)
-            if p.Character then
-                esp(p,p.Character)
-            end
-            p.CharacterAdded:Connect(function(cr)
-                esp(p,cr)
-            end)
-        end
-        
-        for i,p in next, ps:GetPlayers() do 
-            if p ~= lp then
-                p_added(p)
+            if Is_Player(p.Name) then
+                if p:FindFirstChild("HumanoidRootPart") and p:FindFirstChild("Humanoid") then
+                    esp(game.Players[p.Name], p)
+                end
             end
         end
         
-        ps.PlayerAdded:Connect(p_added)
+        for i,v in pairs(game.workspace.Entities:GetChildren()) do
+            if Is_Player(v.Name) then
+                if v:FindFirstChild("HumanoidRootPart") and v:FindFirstChild("Humanoid") then
+                    esp(game.Players[v.Name], v)
+                end
+            end
+        end
+        
+        game.workspace.Entities.ChildAdded:Connect(p_added)
     end
 end)
 
-espSection:addSlider("Max Distance", 10000, 0, 10000, function(v)
+espSection:addSlider("Max Distance", 30000, 0, 30000, function(v)
     ESPPlayerMaxDistance = v
 end)
 
@@ -1209,7 +1210,7 @@ local MOBEspToggle;
 local MobESPColor = Color3.fromRGB(226, 35, 35)
 local ESPMobShowDistance = true
 local ESPMobShowHealth = true
-local ESPMobMaxDistance = 10000;
+local ESPMobMaxDistance = 30000;
 
 local function esp_mob(cr)
     local h = cr:WaitForChild("Humanoid")
@@ -1310,10 +1311,12 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
         activatedMobESP = true
         
         for i,v in pairs(game.workspace.Entities:GetChildren()) do
-            if Is_Player(v.Name) ~= true and MOBEspToggle and string.find(v.Name, "_") then
-                local extractedString = v.Name:match("(.+)_")
-                if extractedString ~= "FlashClone" and v:FindFirstChild("Humanoid") then
-                    esp_mob(v)
+            if v:IsA("Model") then
+                if Is_Player(v.Name) ~= true and MOBEspToggle and string.find(v.Name, "_") then
+                    local extractedString = v.Name:match("(.+)_")
+                    if extractedString ~= "FlashClone" then
+                        esp_mob(v)
+                    end
                 end
             end
         end
@@ -1333,7 +1336,7 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
     end
 end)
 
-ESPMobSection:addSlider("Max Distance", 10000, 0, 10000, function(v)
+ESPMobSection:addSlider("Max Distance", 30000, 0, 30000, function(v)
     ESPMobMaxDistance = v
 end)
 
@@ -1351,7 +1354,7 @@ local activatedMissionESP;
 local MissionESPToggle;
 local ESPMissionDistance;
 local MissionESPColorSelected = Color3.fromRGB(233, 255, 0)
-local ESPMissionMaxDistance = 10000;
+local ESPMissionMaxDistance = 30000;
 
 local function esp_mission(cr)
     local text = Drawing.new("Text")
@@ -1436,7 +1439,7 @@ ESPMissionSection:addToggle("Mission ESP", nil, function(v)
     end
 end)
 
-ESPMissionSection:addSlider("Max Distance", 10000, 0, 10000, function(v)
+ESPMissionSection:addSlider("Max Distance", 30000, 0, 30000, function(v)
     ESPMissionMaxDistance = v
 end)
 
@@ -1459,6 +1462,8 @@ local NPCsData = {
 ESPNPCSection:addDropdown("NPCs", {"Harribel"}, function(v)
     choosenNPCtoESP = v
 end)
+
+local ESPNpcMaxDistance = 30000
 
 local function esp_npc(cr)
     local npcname = NPCsData[choosenNPCtoESP] or cr.Name
@@ -1500,7 +1505,7 @@ local function esp_npc(cr)
 
     c1 = rs.RenderStepped:Connect(function()
         local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
-        if hrp_onscreen and ESPnpcToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMaxDistance then
+        if hrp_onscreen and ESPnpcToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPNpcMaxDistance then
             text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
             text.Visible = true
             text.Color = NPCColorESP
@@ -1532,6 +1537,10 @@ ESPNPCSection:addToggle("Enabled ESP", nil, function(v)
             end
         end
     end
+end)
+
+ESPNPCSection:addSlider("Max distance", 30000, 0, 30000, function(v)
+    ESPNpcMaxDistance = v
 end)
 
 ESPNPCSection:addToggle("Show distance", true, function(v)
