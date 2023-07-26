@@ -1308,27 +1308,28 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
     MOBEspToggle = v
     if activatedMobESP ~= true and v then
         activatedMobESP = true
-        local function mob_added(p)
-            if p ~= nil then
-                if Is_Player(p.Name) ~= true and MOBEspToggle and string.find(p.Name, "_") then
-                    local extractedString = p.Name:match("(.+)_")
-                    if extractedString ~= "FlashClone" and p:FindFirstChild("Humanoid") then
-                        esp_mob(p)
-                    end
-                end
-            end
-        end
         
         for i,v in pairs(game.workspace.Entities:GetChildren()) do
             if Is_Player(v.Name) ~= true and MOBEspToggle and string.find(v.Name, "_") then
                 local extractedString = v.Name:match("(.+)_")
-                if extractedString ~= "FlashClone" and v:FindFirstChild("Humanoid") and v.Humanoid.Health ~= 0 then
+                if extractedString ~= "FlashClone" and v:FindFirstChild("Humanoid") then
                     esp_mob(v)
                 end
             end
         end
         
-        game.workspace.Entities.ChildAdded:Connect(mob_added)
+        game.workspace.Entities.ChildAdded:Connect(function(p)
+            if p ~= nil then
+                if p:IsA("Model") then
+                    if Is_Player(p.Name) ~= true and MOBEspToggle and string.find(p.Name, "_") then
+                        local extractedString = p.Name:match("(.+)_")
+                        if extractedString ~= "FlashClone" then
+                            esp_mob(p)
+                        end
+                    end
+                end
+            end
+        end)
     end
 end)
 
