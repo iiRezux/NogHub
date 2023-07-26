@@ -1306,7 +1306,7 @@ ESPMobSection:addToggle("Mob ESP", nil, function(v)
         local function mob_added(p)
             if p ~= nil then
                 if Is_Player(p.Name) ~= true and MOBEspToggle and string.find(p.Name, "_") then
-                    local extractedString = v.Name:match("(.+)_")
+                    local extractedString = p.Name:match("(.+)_")
                     if extractedString ~= "FlashClone" and p:FindFirstChild("Humanoid") and p.Humanoid.Health ~= 0 then
                         esp_mob(p)
                     end
