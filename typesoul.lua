@@ -1,19 +1,28 @@
 repeat wait() until game:IsLoaded()
 
 for i,v in pairs(game.CoreGui:GetChildren()) do
-    if v.Name == "Nog hub" then
+    if v.Name == "Sinister Hub" then
         v:Destroy()
     end
 end
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/GreenDeno/Venyx-UI-Library/main/source.lua"))()
-local Players = game:GetService("Players")
-local ESP = loadstring(game:HttpGet("https://rawscripts.net/raw/Universal-Script-ESP-Library-9570", true))("there are cats in your walls let them out let them out let them out")
+local venyx = library.new("Sinister Hub", 5013109572)
 
-ESP.Settings.Tracers.Enabled = false
-ESP.Settings.Boxes.Enabled = false
+local PlaceIds = {
+    ["Karakura"] = 14069678431,
+    ["Hueco"] = 14069122388
+}
 
-local venyx = library.new("Nog hub", 5013109572)
+local AllMobs = {
+    ["Shinigami"] = "Shinigami",
+    ["Frisker"] = "Frisker",
+    ["Fishbone"] = "Fishbone",
+    ["Jackal"] = "Adjuchas",
+    ["Bawabawa"] = "Snake",
+    ["Menos"] = "Menos",
+    ["MissionFrisker"] = "Corrupt Frisker"
+}
 
 --Main Variables
 local Self = game:GetService("Players").LocalPlayer
@@ -33,11 +42,18 @@ local function char_valid()
     end
 end
 
+local rotationVal = 0
+
 local function Tween_Call(Pos, Offset, Rotation, tweenstore)
     local Offset = Offset or Vector3.new(0,0,0)
     local Rotation = Rotation or 0
+    local adjustoffset;
 
-    local adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(Rotation), 0, 0)
+    if Rotation and Rotation == rotationVal then
+        adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(rotationVal), 0, 0)
+    else
+        adjustoffset = CFrame.new(Pos + Offset) * CFrame.Angles(math.rad(Rotation), 0, 0)
+    end
     local tweenservice = game:GetService("TweenService")
     local duration;
     duration = (Self.Character.HumanoidRootPart.Position - Pos + Offset).magnitude / TweenTPSpeed
@@ -70,7 +86,7 @@ end
 local function no_stun() --Attachment
     if char_valid() then
         for i,v in pairs(Self.Character.HumanoidRootPart:GetDescendants()) do
-            if v.Name == "Attachment" or v.Name == "BodyFrontAttachment" then
+            if v.Name == "Attachment" or v.Name == "BodyFrontAttachment" or v.Name == "HollowPunch3" or v.Name == "Shards" or v.Name == "ExpLines" or v.Name == "Specs" or v.Name == "Spark" or v.Name == "HollowPunch1" or v.Name == "HollowPunch2" then
                 v:Destroy()
             end
         end
@@ -80,36 +96,6 @@ local function no_stun() --Attachment
             end
         end
     end
-end
-
-local function create_esp(theparent, distance)
-    local billboardGui = Instance.new("BillboardGui")
-    billboardGui.Name = "ESP_Nog"
-    billboardGui.AlwaysOnTop = true
-    billboardGui.Size = UDim2.new(0, 70, 0, 20)
-    billboardGui.Parent = theparent
-    billboardGui.Enabled = false
-
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Name = "NameLabel"
-    textLabel.BackgroundTransparency = 1
-    textLabel.Size = UDim2.new(1, 0, 1, 0)
-    if not distance then
-        textLabel.Text = "Mission"
-    else
-        textLabel.Text = "Mission\nmeters"
-    end
-    textLabel.TextColor3 = Color3.fromRGB(255, 51, 51)
-    textLabel.TextScaled = false
-    textLabel.Parent = billboardGui
-    textLabel.Font = Enum.Font.Jura
-    textLabel.FontSize = 'Size12'
-    textLabel.TextWrapped = true
-    textLabel.TextXAlignment = Enum.TextXAlignment.Center
-    textLabel.TextYAlignment = Enum.TextYAlignment.Top
-
-    local uistroke = Instance.new("UIStroke", textLabel)
-    uistroke.Thickness = 0.5
 end
 
 -- themes
@@ -226,30 +212,92 @@ spawn(function()
     end
 end)
 
+local AutoCampSection =  page:addSection("Auto Camp")
+
+local AutoCampToggle;
+local TeleportedAboveDid;
+local AutoCampHealth = 5;
+
+AutoCampSection:addToggle("Auto Camp (Beta)", nil, function(v)
+    AutoCampToggle = v
+    if v == false then
+        if char_valid() then
+            TeleportedAboveDid = false
+            Self.Character.HumanoidRootPart.Anchored = false
+        end
+    end
+end)
+
+AutoCampSection:addSlider("At Health (%)", 5, 0, 100, function(v)
+    AutoCampHealth = v
+end)
+
+AutoCampSection:addButton("Get down", function()
+    if TeleportedAboveDid == true then
+        if char_valid() then
+            TeleportedAboveDid = false
+            Self.Character.HumanoidRootPart.Anchored = false
+        end
+    end
+end)
+
+
+
+spawn(function()
+    while wait() do
+        if AutoCampToggle then
+            if char_valid() then
+                local thehealth = (Self.Character.Humanoid.MaxHealth / 100) * AutoCampHealth
+                if Self.Character.Humanoid.Health <= thehealth and TeleportedAboveDid ~= true then
+                    TeleportedAboveDid = true
+                    local OldCFrame = Self.Character.HumanoidRootPart.CFrame
+                    Self.Character.HumanoidRootPart.CFrame = CFrame.new(Self.Character.HumanoidRootPart.Position + Vector3.new(0, 350, 0))
+                    wait(0.2)
+                    Self.Character.HumanoidRootPart.Anchored = true
+                    spawn(function()
+                        while wait() do
+                            if TeleportedAboveDid == true and AutoCampToggle == true then
+                                if char_valid() then
+                                    wait(2)
+                                    Self.Character.HumanoidRootPart.Anchored = false
+                                    Self.Character.HumanoidRootPart.CFrame = OldCFrame
+                                    wait(0.2)
+                                    Self.Character.HumanoidRootPart.CFrame = CFrame.new(Self.Character.HumanoidRootPart.Position + Vector3.new(0, 300, 0))
+                                    wait(0.2)
+                                    Self.Character.HumanoidRootPart.Anchored = true
+                                end
+                            end
+                        end
+                    end)
+                end
+            end
+        end
+    end
+end)
+
+
 local antisection = page:addSection("Anti Section")
 local choosenDodgeRange;
 local AutoDodgeCeroConnection;
 local AutoDodgeCeroToggle;
 local AntiStunToggle;
 
-antisection:addToggle("Auto Dodge Cero", nil, function(value)
+antisection:addToggle("Auto Dodge Cero (Beta)", nil, function(value)
     AutoDodgeCeroToggle = value
     if AutoDodgeCeroConnection == nil and AutoDodgeCeroToggle then
         AutoDodgeCeroConnection = game:GetService("Workspace").Effects.DescendantAdded:Connect(function(effect)
             if AutoDodgeCeroToggle then
                 if char_valid() then
                     if effect:IsA("Model") then
-                        if string.find("Cero", effect.Name) then
+                        if string.find(effect.Name, "Cero") then
                             local part = effect:FindFirstChild("Beam")
                             if part then
                                 if (Self.Character.HumanoidRootPart.Position - part.Position).magnitude <= choosenDodgeRange then
                                     if effect.Parent.Name ~= Self.Name then
                                         local oldhip = Self.Character.Humanoid.HipHeight
-                                        Self.Character.Humanoid.HipHeight = oldhip + part.Size.Y + 5
+                                        Self.Character.Humanoid.HipHeight = oldhip + part.Size.Y + 20
                                         wait(1)
                                         Self.Character.Humanoid.HipHeight = oldhip
-                                    else
-                                        print(part.Size.X,part.Size.Y, part.Size.Z)
                                     end
                                 end
                             end
@@ -258,28 +306,6 @@ antisection:addToggle("Auto Dodge Cero", nil, function(value)
                 end
             end
         end)
-    end
-end)
-
-spawn(function()
-    while wait() do
-        if AutoDodgeCeroToggle then
-            if choosenDodgeRange ~= nil then
-                for i,v in pairs(game:GetService("Workspace").Effects:GetDescendants()) do
-                    if v:IsA("Model") and string.find("Cero", v.Name) then
-                        if v.Parent.Name ~= Self.Name then
-                            if v:FindFirstChild("Beam") then
-                                if (Self.Character.HumanoidRootPart.Position - v.Beam.Position).magnitude <= choosenDodgeRange then
-                                    if Self.Character.Humanoid.HipHeight ~= 350 then
-                                        Self.Character.Humanoid.HipHeight = 350
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        end
     end
 end)
 
@@ -350,6 +376,51 @@ spawn(function()
     end
 end)
 
+local miscsection = page:addSection("Misc")
+
+local autoCreatePartyToggle;
+
+miscsection:addToggle("Auto Create Party", nil, function(v)
+    autoCreatePartyToggle = v
+end)
+
+miscsection:addButton("Redeem all codes", function()
+    local currentcodes = loadstring(game:HttpGet("https://raw.githubusercontent.com/iiRezux/MiscS/main/typesoul.lua"))()
+    if #currentcodes ~= 0 then
+        if char_valid() then
+            for i,v in pairs(currentcodes) do
+                local A_1 = v
+                local Event = Self.Character.CharacterHandler.Remotes.Codes
+                Event:InvokeServer(A_1)
+            end
+        end
+    end
+end)
+
+miscsection:addButton("Fast Reset", function()
+    if char_valid() then
+        Self.Character.Humanoid.Health = 0
+    end
+end)
+
+spawn(function()
+    while wait(1) do
+        if autoCreatePartyToggle then
+            if char_valid() then
+                if Self:GetAttribute("Party") == nil then
+                    local Event = Self.Character.CharacterHandler.Remotes.PartyCreate
+                    Event:FireServer()
+                else
+                    if Self:GetAttribute("Party") == "" then
+                        local Event = Self.Character.CharacterHandler.Remotes.PartyCreate
+                        Event:FireServer()
+                    end
+                end
+            end
+        end
+    end
+end)
+
 local autofarmpage = venyx:addPage("Farm", 5012544693)
 
 local autofarmsection = autofarmpage:addSection("Auto Farm")
@@ -357,8 +428,12 @@ local autofarmsection = autofarmpage:addSection("Auto Farm")
 local currentNPC;
 local autofarmnpctoggle;
 
-autofarmsection:addDropdown("Select Mob", {"Fishbone","Menos","Adjuchas","Frisker","Shinigami"}, function(v)
-    currentNPC = v
+autofarmsection:addDropdown("Select Mob", {"Fishbone","Menos", "Adjuchas","Frisker","Shinigami"}, function(v)
+    if v ~= "Adjuchas" then
+        currentNPC = v
+    else
+        currentNPC = "Jackal"
+    end
 end)
 
 autofarmsection:addToggle("Auto Farm NPC", nil, function(value)
@@ -383,7 +458,6 @@ autofarmsection:addSlider("Farm Offset", 0, -70, 70, function(value)
     FarmOffset = Vector3.new(0, value, 0)
 end)
 
-local rotationVal = 0
 
 autofarmsection:addSlider("Rotation", 0, -180, 180, function(value)
     rotationVal = value
@@ -480,7 +554,7 @@ spawn(function()
         if autofarmnpctoggle then
             if currentNPC ~= nil then
                 if char_valid() then
-                    if target_npc ~= nil then
+                    if target_npc ~= nil and check_valibilaty(target_npc) and check_valibilaty(target_npc):FindFirstChild("HumanoidRootPart") then
                         if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelp") == nil then
                             local bodv = Instance.new("BodyVelocity", Self.Character.HumanoidRootPart)
                             bodv.Name = "TweenHelp"
@@ -497,7 +571,7 @@ spawn(function()
                             no_stun()
                         end
                         if eatingSoulState ~= true then
-                            if target_npc ~= nil then
+                            if target_npc ~= nil and char_valid() then
                                 if (Self.Character.HumanoidRootPart.Position - target_npc.HumanoidRootPart.Position).magnitude < 15 then
                                     if #currentTween ~= 0 then
                                         for i,v in pairs(currentTween) do
@@ -533,6 +607,34 @@ local autoattacksectino = autofarmpage:addSection("Auto Attack")
 
 autoattacksectino:addDropdown("Attack type", {"M1", "Critical"}, function(v)
     attackTypeChoosen = v
+end)
+
+local autoequipsection = autofarmpage:addSection("Auto Equip")
+
+local autoEquipChoosen;
+local autoEquipToggle;
+
+autoequipsection:addToggle("Auto Equip", nil, function(v)
+    autoEquipToggle = v
+end)
+
+autoequipsection:addDropdown("Tool", {"Zanpakuto"}, function(v)
+    autoEquipChoosen = v
+end)
+
+spawn(function()
+    while wait(1) do
+        if autoEquipToggle then
+            if autoEquipChoosen ~= nil then
+                if char_valid() then
+                    if Self.Character:FindFirstChild(autoEquipChoosen) then
+                        local Event = Self.Character.CharacterHandler.Remotes.Weapon
+                        Event:FireServer()
+                    end
+                end
+            end
+        end
+    end
 end)
 
 
@@ -609,11 +711,6 @@ spawn(function()
                                             if Self.Character.HumanoidRootPart:FindFirstChild("TweenEatHelp") then
                                                 Self.Character.HumanoidRootPart.TweenEatHelp:Destroy()
                                             end
-                                            for i,v in pairs(Self.Character:GetChildren()) do
-                                                if v:IsA("BasePart") and v.CanCollide == false then
-                                                    v.CanCollide = true
-                                                end
-                                            end
                                             if filter_closest(currentSoulsNearby) ~= nil then
                                                 closest_body_part = filter_closest(currentSoulsNearby)
                                             end
@@ -661,7 +758,7 @@ autocompleteminigamSection:addToggle("Divison Duties", nil , function(v)
     MiniGameOsuToggle = v
 end)
 
-local raidsection = autofarmpage:addSection("Raid")
+local raidsection = autofarmpage:addSection("Raid (Beta)")
 
 local AutoPickUpFlag;
 
@@ -720,7 +817,7 @@ spawn(function()
                 if game:GetService("Workspace"):FindFirstChild("KarakuraRaid") then
                     if game:GetService("Workspace").KarakuraRaid:FindFirstChild(ChoosenFlagType.."Flag") then
                         for i,v in pairs(game:GetService("Workspace").KarakuraRaid[ChoosenFlagType.."Flag"]:GetDescendants()) do
-                            if v:IsA("Part") then
+                            if v:IsA("MeshPart") then
                                 if (Self.Character.HumanoidRootPart.Position - v.Position).magnitude < 12 then
                                     if #StoredFlagTweens ~= 0 then
                                         for i2,v2 in pairs(StoredFlagTweens) do
@@ -748,7 +845,7 @@ spawn(function()
                                         bodv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
                                         bodv.P = 1000
                                     end
-                                    Tween_Call(v.Position, FlagTweenOffset, StoredFlagTweens)
+                                    Tween_Call(v.Position, FlagTweenOffset, 0, StoredFlagTweens)
                                 end
                             end
                         end
@@ -802,17 +899,46 @@ local missionTPSector = teleportPage:addSection("Mission TP")
 local TPStatus;
 local TPInsantSelected;
 
-instantp:addDropdown("Teleport to world", {"Las Noches"}, function(v)
+instantp:addDropdown("Teleport to world", {"Soul Society", "Wanden" , "Hueco Mundo", "Las Noches"}, function(v)
     TPInsantSelected = v
 end)
 
 instantp:addButton("Teleport", function()
     if TPInsantSelected ~= nil then
+        if TPInsantSelected == "Soul Society" then
+            if game.PlaceId == PlaceIds["Karakura"] then
+                if game:GetService("Workspace"):FindFirstChild("SoulGate") then
+                    if game:GetService("Workspace").SoulGate:FindFirstChild("SoulGate") then
+                        if char_valid() then
+                            Self.Character.HumanoidRootPart.CFrame = game.Workspace.SoulGate.SoulGate.CFrame
+                        end
+                    end
+                end
+            end
+        elseif TPInsantSelected == "Wanden" then
+            if game.PlaceId == PlaceIds["Karakura"] then
+                if game:GetService("Workspace"):FindFirstChild("WandenreichGate") then
+                    if game:GetService("Workspace").WandenreichGate:FindFirstChildOfClass("Part") then
+                        Self.Character.HumanoidRootPart.CFrame = game.Workspace.WandenreichGate:FindFirstChildOfClass("Part").CFrame
+                    end
+                end
+            end
+        elseif TPInsantSelected == "Hueco Mundo" then
+            if game.PlaceId == PlaceIds["Karakura"] then
+                if game:GetService("Workspace"):FindFirstChild("Pathway") then
+                    if game:GetService("Workspace").Pathway:FindFirstChild("PortalBlock") then    
+                        Self.Character.HumanoidRootPart.CFrame = CFrame.new(game:GetService("Workspace").Pathway.PortalBlock.Position + Vector3.new(-3.5, 0, 0))
+                    end
+                end
+            end
+        end
         if TPInsantSelected == "Las Noches" then
-            if game:GetService("Workspace"):FindFirstChild("LasNoches") then
-                if game.Workspace.LasNoches:FindFirstChild("MenosPit") then
-                    if char_valid() then
-                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Workspace.LasNoches.MenosPit.CFrame
+            if game.PlaceId == PlaceIds["Hueco"] then
+                if game:GetService("Workspace"):FindFirstChild("LasNoches") then
+                    if game.Workspace.LasNoches:FindFirstChild("MenosPit") then
+                        if char_valid() then
+                            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game.Workspace.LasNoches.MenosPit.CFrame
+                        end
                     end
                 end
             end
@@ -852,24 +978,56 @@ tweentp:addDropdown("Teleport to area", {"Obby Spawn", "Obby End"}, function(opt
     end
 end)
 
+local TweenStoreNPC;
+
+tweentp:addDropdown("Teleport to NPC", {"Harribel"}, function(v22)
+    if v22 == "Harribel" then
+        for i,v in pairs(game:GetService("Workspace").NPCs:GetDescendants()) do
+            if v.Name == "Harribel's Cloak" then
+                if char_valid() then
+                    if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelpNPC") == nil then
+                        local bodv = Instance.new("BodyVelocity", Self.Character.HumanoidRootPart)
+                        bodv.Name = "TweenHelpNPC"
+                        bodv.Velocity = Vector3.new(0,0,0)
+                        bodv.MaxForce = Vector3.new(math.huge,math.huge,math.huge)
+                        bodv.P = 1000
+                    end
+                    Tween_Call(v.Parent.HumanoidRootPart.Position, Vector3.new(4,0,0), 0, TweenStoreNPC)
+                    repeat wait() until TweenStoreNPC ~= nil
+                    TweenStoreNPC.Completed:Connect(function()
+                        if char_valid() then
+                            if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelpNPC") then
+                                Self.Character.HumanoidRootPart.TweenHelpNPC:Destroy()
+                            end
+                        end
+                    end)
+                end
+            end
+        end
+    end
+end)
+
 local currentTweening;
 
 missionTPSector:addButton("Tween to nearest mission", function(v)
     local dist = math.huge;
     local nearest_mission;
-    for i,v in pairs(game:GetService("Workspace").NPCs.MissionNPC:GetChildren()) do
-        if v.Name == "MissionBoard" then
-            local part = v:FindFirstChildOfClass("Part")
-            if char_valid() then
-                local magn = (Self.Character.HumanoidRootPart.Position - part.Position).magnitude
-                if magn < dist then
-                    dist = magn
-                    nearest_mission = part
+    if char_valid() then
+        for i,v in pairs(game:GetService("Workspace").NPCs.MissionNPC:GetChildren()) do
+            if v.Name == "MissionBoard" then
+                local part = v:FindFirstChildOfClass("Part")
+                if char_valid() then
+                    local magn = (Self.Character.HumanoidRootPart.Position - part.Position).magnitude
+                    if magn < dist then
+                        dist = magn
+                        nearest_mission = part
+                    end
                 end
             end
         end
     end
     if nearest_mission ~= nil then
+       if char_valid() then
         if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelpMissionTP") == nil then
             local bodv = Instance.new("BodyVelocity", Self.Character.HumanoidRootPart)
             bodv.Name = "TweenHelpMissionTP"
@@ -882,147 +1040,544 @@ missionTPSector:addButton("Tween to nearest mission", function(v)
         if Self.Character.HumanoidRootPart:FindFirstChild("TweenHelpMissionTP") then
             Self.Character.HumanoidRootPart["TweenHelpMissionTP"]:Destroy()    
         end
+       end
     end
 end)
 
 local visualPage = venyx:addPage("Visual", 5012544693)
+
+local PlayerESPColorSelected = Color3.fromRGB(255, 51, 51)
+local MobESPColorSelected = Color3.fromRGB(255, 51, 51)
+local MissionESPColorSelected = Color3.fromRGB(255, 51, 51)
+
+local PlayerESPToggle;
+local ShowDistancePlayerESP;
+local showHealthToggle;
+
+
+
 local espSection = visualPage:addSection("ESP Player")
 
-espSection:addToggle("Player ESP", nil, function(v)
-    ESP.Enabled = v
-    if v then
-        for i, Player in next, Players:GetPlayers() do
-            if Player ~= game.Players.LocalPlayer then
-                if Player.Character ~= nil then
-                    ESP.Object:New(ESP:GetCharacter(Player))
-                    ESP:CharacterAdded(Player):Connect(function(Character)
-                        ESP.Object:New(Character)
-                    end)
-                end
-            end
-         end
-         
-         Players.PlayerAdded:Connect(function(Player)
-            if Player.Character ~= nil then
-                ESP.Object:New(ESP:GetCharacter(Player))
-                ESP:CharacterAdded(Player):Connect(function(Character)
-                    ESP.Object:New(Character)
-                end)
-            end
-         end)
-    end
-end)
-
---[[local ESPdroppedItemsSection = visualPage:addSection("Dropped Items ESP")
-
-local droppedItemsESP;
-
-ESPdroppedItemsSection:addToggle("Dropped Items ESP", nil, function(v)
-    droppedItemsESP = v
-    if droppedItemsESP then
-        for i, v in pairs(game.Workspace.DroppedItems:GetChildren()) do
-            if v:IsA("Part") then
-                ESP.Object:New(v)
-            end
-        end
-        ESP:AddListener(v.Parent):Connect(function(Character)
-            ESP.Object:New(Character)
-        end)
-    end
-end)]]
-
-local missionItemsSection = visualPage:addSection("ESP Mission")
-
-local function check_esp_exist(model)
-    for i,v in pairs(model:GetDescendants()) do
-        if v.Name == "ESP_Nog" then
+local function Is_Player(name)
+    for i,v in pairs(game.Players:GetPlayers()) do
+        if v.Name == name then
             return true
         end
     end
 end
 
-local missionESPToggle;
-local showDistanceMission;
 
-missionItemsSection:addToggle("Mission ESP", nil, function(v22)
-    missionESPToggle = v22
-    if missionESPToggle then
+local ESPPlayerShowHealth = true
+local ESPPlayerShowDistance = true
+local PlayerESPColor = Color3.fromRGB(3, 231, 107)
+local ESPMaxDistance = 1000
+
+local c = workspace.CurrentCamera
+local ps = game:GetService("Players")
+local lp = ps.LocalPlayer
+local rs = game:GetService("RunService")
+local ESPPlayerToggle = false
+local ESPTextOutlineSettings;
+
+local function esp(p,cr)
+    local h = cr:WaitForChild("Humanoid")
+    local hrp = cr:WaitForChild("HumanoidRootPart")
+
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Center = true
+    text.Outline = true 
+    text.Font = 2
+    text.Color = PlayerESPColor
+    text.Size = 13
+
+    local c1
+    local c2
+    local c3
+    local c4
+
+    local function dc()
+        text.Visible = false
+        text:Remove()
+        if c1 then
+            c1:Disconnect()
+            c1 = nil 
+        end
+        if c2 then
+            c2:Disconnect()
+            c2 = nil 
+        end
+        if c3 then
+            c3:Disconnect()
+            c3 = nil 
+        end
+        if c4 then
+            c4:Disconnect()
+            c4 = nil 
+        end
+    end
+
+    c4 = game.workspace.Entities.ChildRemoved:Connect(function(b)
+        if b == cr then
+            dc()
+        end
+    end)
+
+    c2 = h.Died:Connect(function()
+        dc()
+    end)
+
+    c3 = h.HealthChanged:Connect(function(v)
+        if (h:GetState() == Enum.HumanoidStateType.Dead) then
+            dc()
+        end
+    end)
+
+    c1 = rs.RenderStepped:Connect(function()
+        local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
+        if hrp_onscreen and ESPPlayerToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMaxDistance then
+            text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
+            text.Visible = true
+            text.Color = PlayerESPColor
+            if ESPPlayerShowDistance and ESPPlayerShowHealth ~= true then
+                if char_valid() then
+                    text.Text = p.Name.."\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude)).."m"
+                else
+                    text.Text = p.Name
+                end
+            elseif ESPPlayerShowDistance and ESPPlayerShowHealth then
+                if char_valid() then
+                    text.Text = p.Name.."\n["..math.floor(h.Health).."/"..h.MaxHealth.."]\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude)).."m"
+                else
+                    text.Text = p.Name
+                end
+            elseif ESPPlayerShowDistance ~= true and ESPPlayerShowHealth then
+                if char_valid() then
+                    text.Text = p.Name.."\n["..math.floor(h.Health).."/"..h.MaxHealth.."]"
+                else
+                    text.Text = p.Name
+                end
+            else
+                text.Text = p.Name
+            end
+        else
+            text.Visible = false
+        end
+    end)
+end
+
+local activatedESPPlayer;
+
+espSection:addToggle("Player ESP", nil, function(v)
+    ESPPlayerToggle = v
+    if activatedESPPlayer ~= true and v then
+        activatedESPPlayer = true
+        local function p_added(p)
+            if p.Character then
+                esp(p,p.Character)
+            end
+            p.CharacterAdded:Connect(function(cr)
+                esp(p,cr)
+            end)
+        end
+        
+        for i,p in next, ps:GetPlayers() do 
+            if p ~= lp then
+                p_added(p)
+            end
+        end
+        
+        ps.PlayerAdded:Connect(p_added)
+    end
+end)
+
+espSection:addToggle("Show health", true, function(v)
+    ESPPlayerShowHealth = v
+end)
+
+espSection:addToggle("Show Distance", true, function(v)
+    ESPPlayerShowDistance = v
+end)
+
+local ESPMobSection = visualPage:addSection("Mob ESP")
+
+local MOBEspToggle;
+local MobESPColor = Color3.fromRGB(226, 35, 35)
+local ESPMobShowDistance = true
+local ESPMobShowHealth = true
+
+local function esp_mob(cr)
+    local h = cr:WaitForChild("Humanoid")
+    local hrp = cr:WaitForChild("HumanoidRootPart")
+    local extractedString = cr.Name:match("(.+)_")
+    local mobname = AllMobs[extractedString] or cr.Name
+
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Center = true
+    text.Outline = true 
+    text.Font = 2
+    text.Color = MobESPColor
+    text.Size = 13
+
+    local c1
+    local c2
+    local c3
+    local c4
+
+    local function dc()
+        text.Visible = false
+        text:Remove()
+        if c1 then
+            c1:Disconnect()
+            c1 = nil 
+        end
+        if c2 then
+            c2:Disconnect()
+            c2 = nil 
+        end
+        if c3 then
+            c3:Disconnect()
+            c3 = nil 
+        end
+        if c4 then
+            c4:Disconnect()
+            c4 = nil 
+        end
+    end
+
+    c4 = game.workspace.Entities.ChildRemoved:Connect(function(b)
+        if b == cr then
+            dc()
+        end
+    end)
+
+    c2 = h.Died:Connect(function()
+        dc()
+    end)
+
+    c3 = h.HealthChanged:Connect(function(v)
+        if (h:GetState() == Enum.HumanoidStateType.Dead) then
+            dc()
+        end
+    end)
+
+    c1 = rs.RenderStepped:Connect(function()
+        local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
+        if hrp_onscreen and MOBEspToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMaxDistance then
+            text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
+            text.Visible = true
+            text.Color = MobESPColor
+            if ESPMobShowDistance and ESPMobShowHealth ~= true then
+                if char_valid() then
+                    text.Text = mobname.."\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude)).."m"
+                else
+                    text.Text = mobname
+                end
+            elseif ESPMobShowDistance and ESPMobShowHealth then
+                if char_valid() then
+                    text.Text = mobname.."\n["..math.floor(h.Health).."/"..h.MaxHealth.."]\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude)).."m"
+                else
+                    text.Text = mobname
+                end
+            elseif ESPMobShowDistance ~= true and ESPMobShowHealth then
+                if char_valid() then
+                    text.Text = mobname.."\n["..math.floor(h.Health).."/"..h.MaxHealth.."]"
+                else
+                    text.Text = mobname
+                end
+            else
+                text.Text = mobname
+            end
+        elseif cr == nil then
+            dc()
+        else
+            text.Visible = false
+        end
+    end)
+end
+
+local activatedMobESP;
+
+ESPMobSection:addToggle("Mob ESP", nil, function(v)
+    MOBEspToggle = v
+    if activatedMobESP ~= true and v then
+        activatedMobESP = true
+        local function mob_added(p)
+            if p ~= nil then
+                if Is_Player(p.Name) ~= true and MOBEspToggle and string.find(p.Name, "_") then
+                    local extractedString = v.Name:match("(.+)_")
+                    if extractedString ~= "FlashClone" and p:FindFirstChild("Humanoid") and p.Humanoid.Health ~= 0 then
+                        esp_mob(p)
+                    end
+                end
+            end
+        end
+        
+        for i,v in pairs(game.workspace.Entities:GetChildren()) do
+            if Is_Player(v.Name) ~= true and MOBEspToggle and string.find(v.Name, "_") then
+                local extractedString = v.Name:match("(.+)_")
+                if extractedString ~= "FlashClone" and v:FindFirstChild("Humanoid") and v.Humanoid.Health ~= 0 then
+                    esp_mob(v)
+                end
+            end
+        end
+        
+        game.workspace.Entities.ChildAdded:Connect(mob_added)
+    end
+end)
+
+ESPMobSection:addToggle("Show health", true, function(v)
+    ESPMobShowHealth = v
+end)
+
+ESPMobSection:addToggle("Show Distance", true, function(v)
+    ESPMobShowDistance = v
+end)
+
+local ESPMissionSection = visualPage:addSection("Mission ESP")
+
+local activatedMissionESP;
+local MissionESPToggle;
+local ESPMissionDistance;
+local MissionColor = Color3.fromRGB(233, 255, 0)
+
+local function esp_mission(cr)
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Center = true
+    text.Outline = true 
+    text.Font = 2
+    text.Color = MobESPColor
+    text.Size = 13
+
+    local c1
+    local c2
+    local c3
+
+    local function dc()
+        text.Visible = false
+        text:Remove()
+        if c1 then
+            c1:Disconnect()
+            c1 = nil 
+        end
+        if c2 then
+            c2:Disconnect()
+            c2 = nil 
+        end
+        if c3 then
+            c3:Disconnect()
+            c3 = nil 
+        end
+    end
+
+    c2 = game:GetService("Workspace").NPCs.MissionNPC.DescendantRemoving:Connect(function(b)
+        if b == cr then
+            dc()
+        end
+    end)
+
+    c1 = rs.RenderStepped:Connect(function()
+        local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(cr.Position)
+        if hrp_onscreen and MissionESPToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - cr.Position).magnitude <= ESPMaxDistance then
+            text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
+            text.Visible = true
+            text.Color = MissionColor
+            if ESPMissionDistance then
+                if char_valid() then
+                    text.Text = "Mission\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - cr.Position).magnitude)).."m"
+                end
+            else
+                text.Text = "Mission"
+            end
+        elseif cr == nil then
+            dc()
+        else
+            text.Visible = false
+        end
+    end)
+end
+
+ESPMissionSection:addToggle("Mission ESP", nil, function(v)
+    MissionESPToggle = v
+    if activatedMissionESP ~= true and v then
+        activatedMissionESP = true
+        local function mission_added(p)
+            if p:IsA("Model") and p.Name == "MissionBoard" and MissionESPToggle then
+                local part = p:FindFirstChildOfClass("Part") or nil
+                if part then
+                    esp_mission(part)
+                end
+            end
+        end
+        
         for i,v in pairs(game:GetService("Workspace").NPCs.MissionNPC:GetChildren()) do
-            if v.Name == "MissionBoard" then
-                if check_esp_exist(v) ~= true then
-                    create_esp(v:FindFirstChildOfClass("Part"), showDistanceMission)
-                    if missionESPToggle then
-                        for i2,v2 in pairs(v:GetDescendants()) do
-                            if v2.Name == "ESP_Nog" then
-                                v2.Enabled = true
-                            end
-                        end
-                    end
-                elseif check_esp_exist(v) == true then
-                    for i2,v2 in pairs(v:GetDescendants()) do
-                        if v2.Name == "ESP_Nog" then
-                            v2.Enabled = true
-                        end
-                    end
+            if v:IsA("Model") and v.Name == "MissionBoard" and MissionESPToggle then
+                local part = v:FindFirstChildOfClass("Part") or nil
+                if part then
+                    esp_mission(part)
+                end
+            end
+        end
+        
+        game:GetService("Workspace").NPCs.MissionNPC.ChildAdded:Connect(mission_added)
+    end
+end)
+
+ESPMissionSection:addToggle("Show distance", nil, function(v)
+    ESPMissionDistance = v
+end)
+
+local ESPNPCSection = visualPage:addSection("NPCs ESP")
+
+local choosenNPCtoESP;
+local ESPnpcToggle;
+local NPCColorESP = Color3.new(126, 3, 231)
+local executedNPCESP;
+local ESPNPCDistance = true
+
+local NPCsData = {
+    ["Harribel"] = "PartialRes"
+}
+
+ESPNPCSection:addDropdown("NPCs", {"Harribel"}, function(v)
+    choosenNPCtoESP = v
+end)
+
+local function esp_npc(cr)
+    local npcname = NPCsData[choosenNPCtoESP] or cr.Name
+    local hrp = cr:WaitForChild("HumanoidRootPart")
+    local text = Drawing.new("Text")
+    text.Visible = false
+    text.Center = true
+    text.Outline = true 
+    text.Font = 2
+    text.Color = NPCColorESP
+    text.Size = 13
+
+    local c1
+    local c2
+    local c3
+
+    local function dc()
+        text.Visible = false
+        text:Remove()
+        if c1 then
+            c1:Disconnect()
+            c1 = nil 
+        end
+        if c2 then
+            c2:Disconnect()
+            c2 = nil 
+        end
+        if c3 then
+            c3:Disconnect()
+            c3 = nil 
+        end
+    end
+
+    c2 = game:GetService("Workspace").NPCs.PartialRes.ChildRemoved:Connect(function(b)
+        if b == cr then
+            dc()
+        end
+    end)
+
+    c1 = rs.RenderStepped:Connect(function()
+        local hrp_pos,hrp_onscreen = c:WorldToViewportPoint(hrp.Position)
+        if hrp_onscreen and ESPnpcToggle and char_valid() and (Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude <= ESPMaxDistance then
+            text.Position = Vector2.new(hrp_pos.X, hrp_pos.Y)
+            text.Visible = true
+            text.Color = NPCColorESP
+            if ESPNPCDistance then
+                if char_valid() then
+                    text.Text = npcname.."\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - hrp.Position).magnitude)).."m"
+                end
+            else
+                text.Text = npcname
+            end
+        elseif cr == nil then
+            dc()
+        else
+            text.Visible = false
+        end
+    end)
+end
+
+ESPNPCSection:addToggle("Enabled ESP", nil, function(v)
+    ESPnpcToggle = v
+    if executedNPCESP ~= true then
+        executedNPCESP = true
+
+        if choosenNPCtoESP ~= nil then
+            for i,v in pairs(game:GetService("Workspace").NPCs.PartialRes:GetChildren()) do
+                if v:FindFirstChild(choosenNPCtoESP) then
+                    esp_npc(v)
+                end
+            end
+        end
+    end
+end)
+
+ESPNPCSection:addToggle("Show distance", true, function(v)
+    ESPNPCDistance = v
+end)
+
+local streamermodesec = visualPage:addSection("Streamer Mode")
+
+local StreamerModeToggle;
+
+streamermodesec:addToggle("Streamer Mode", nil, function(v33)
+    StreamerModeToggle = v33
+    if StreamerModeToggle then
+        if game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui") then
+            for i,v in pairs(game.Players.LocalPlayer.PlayerGui.Leaderboard.PlayerList.PlayerListFrame:GetChildren()) do
+                if v.Name == Self.Name then
+                    v.Visible = false
+                end
+            end
+            for i,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.Settings.Frame:GetChildren()) do
+                if v.Name == "CharacterName" or v.Name == "CurrentServer" or v.Name == "PlayerName" or v.Name == "ServerTime" or v.Name == "Region" then
+                    v.Visible = false
                 end
             end
         end
     else
-        for i,v in pairs(game:GetService("Workspace").NPCs.MissionNPC:GetDescendants()) do
-            if v.Name == "ESP_Nog" then
-                v.Enabled = false
-            end
-        end
-    end
-end)
-
-spawn(function()
-    while wait() do
-        if missionESPToggle and showDistanceMission then
-            if char_valid() then
-                for i,v in pairs(game:GetService("Workspace").NPCs.MissionNPC:GetDescendants()) do
-                    if v.Name == "NameLabel" and v.Parent.Name == "ESP_Nog" then
-                        if v.TextScaled == false then
-                            v.TextScaled = true
-                        end
-                        if v.Text ~= "Mission\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - v.Parent.Parent.Position).magnitude)).." meters" then
-                            v.Text = "Mission\n"..tostring(math.floor((Self.Character.HumanoidRootPart.Position - v.Parent.Parent.Position).magnitude)).." meters"
-                        end
-                    end
+        if game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui") then
+            for i,v in pairs(game.Players.LocalPlayer.PlayerGui.Leaderboard.PlayerList.PlayerListFrame:GetChildren()) do
+                if v.Name == Self.Name then
+                    v.Visible = true
                 end
             end
-        elseif missionESPToggle and showDistanceMission ~= true then
-            for i,v in pairs(game:GetService("Workspace").NPCs.MissionNPC:GetDescendants()) do
-                if v.Name == "NameLabel" and v.Parent.Name == "ESP_Nog" then
-                    if v.TextScaled == true then
-                        v.TextScaled = false
-                    end
+            for i,v in pairs(game:GetService("Players").LocalPlayer.PlayerGui.Settings.Frame:GetChildren()) do
+                if v.Name == "CharacterName" or v.Name == "CurrentServer" or v.Name == "PlayerName" or v.Name == "ServerTime" or v.Name == "Region" then
+                    v.Visible = true
                 end
             end
         end
     end
-end)
-
-missionItemsSection:addToggle("Show distance", nil, function(v)
-    showDistanceMission = v
 end)
 
 local espSettingsSector = visualPage:addSection("ESP Settings")
 
 espSettingsSector:addSlider("Max Distance", 1000, 100, 10000, function(v)
-    ESP.Settings.MaxDistance = v
+    ESPMaxDistance = v
 end)
 
-espSettingsSector:addToggle("Show Health", nil, function(v)
-    ESP.Settings.Names.Health = v
+espSettingsSector:addColorPicker("Player ESP", Color3.fromRGB(3, 231, 107), function(v)
+    PlayerESPColor = v
 end)
 
-espSettingsSector:addToggle("Tracers", nil, function(v)
-    ESP.Settings.Tracers.Enabled = v
+espSettingsSector:addColorPicker("Mob ESP", Color3.fromRGB(226, 35, 35), function(v)
+    MobESPColor = v
 end)
 
-espSettingsSector:addToggle("Boxes", nil, function(v)
-    ESP.Settings.Boxes.Enabled = v
+espSettingsSector:addColorPicker("Mission ESP", Color3.fromRGB(3, 231, 107), function(v)
+    MissionESPColorSelected = v
+end)
+
+espSettingsSector:addToggle("Text Outline", nil, function(v)
+    ESPTextOutlineSettings = v
 end)
 
 local settingsPage = venyx:addPage("Settings", 5012544693)
