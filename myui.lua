@@ -90,7 +90,7 @@ do
     end
     --
     Utility.CLCheck = function()
-        repeat task.wait() until iswindowactive()
+        repeat task.wait() until game:IsLoaded()
         do
             local InputHandle = Utility.AddInstance("TextBox", {
                 Position = UDim2.new(0, 0, 0, 0)
