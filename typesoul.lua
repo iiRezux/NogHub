@@ -1,7 +1,5 @@
 repeat wait() until game:IsLoaded()
 
-game.Players.LocalPlayer:Kick("Yak a wld l9sba")
-return
 
 for i,v in pairs(game.CoreGui:GetChildren()) do
     if v.Name == "Sinister Hub" then
