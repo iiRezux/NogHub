@@ -772,14 +772,8 @@ do
 				})
 			})
 		})
-        
-        local metatable = {
-            ["Title"] = title,
-            ["Default"] = default,
-            ["Flag"] = flag
-        }
 
-		table.insert(self.modules, metatable)
+		table.insert(self.modules, toggle)
 		--self:Resize()
 		
 		local active = default
@@ -795,8 +789,16 @@ do
 				end)
 			end
 		end)
+
+        if flag then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = toggle,
+                Value = flag
+            })
+        end
 		
-		return metatable
+		return toggle
 	end
 	
 	function section:addTextbox(title, default, callback)
