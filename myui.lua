@@ -2597,7 +2597,10 @@ function library:Init()
         self.main.Size = UDim2.new(0, 16 + ((#tab.columns < 2 and 2 or #tab.columns) * 239), 0, 600)
         self.currentTab = tab
         tab.button.TextColor3 = library.flags["Menu Accent Color"]
-        self.tabHighlight:TweenPosition(UDim2.new(0, tab.button.Position.X.Offset, 0, 50), "Out", "Quad", 0.2, true)
+        local targetPosition = UDim2.new(0, tab.button.Position.X.Offset, 0, 50)
+        local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        local tweenPos = game:GetService("TweenService"):Create(self.tabHighlight, tweenInfo, {Position = targetPosition})
+        tweenPos:Play()
         local targetSize = UDim2.new(0, tab.button.AbsoluteSize.X, 0, -1)
         local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
         local tween = game:GetService("TweenService"):Create(self.tabHighlight, tweenInfo, {Size = targetSize})
