@@ -790,9 +790,13 @@ do
 			end
 		end)
 
-        toggle:SetAttribute("Flag", flag)
+        local metatable = {
+            ["Title"] = title,
+            ["Default"] = default,
+            ["Flag"] = flag
+        }
 		
-		return toggle
+		return metatable
 	end
 	
 	function section:addTextbox(title, default, callback)
