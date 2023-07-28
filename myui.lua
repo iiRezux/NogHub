@@ -80,11 +80,6 @@ function library:Unload()
             i.object:Destroy()
         end
     end
-    for _, o in next, self.options do
-        if o.type == "toggle" then
-            coroutine.resume(coroutine.create(o.SetState))
-        end
-    end
     library = nil
     getgenv().library = nil
 end
