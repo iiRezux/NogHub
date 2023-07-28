@@ -790,11 +790,7 @@ do
 			end
 		end)
 
-        local metatable = {}
-
-        metatable.Flag = flag
-
-        setmetatable(toggle, { __index = metatable })
+        toggle:SetAttribute("Flag", flag)
 		
 		return toggle
 	end
