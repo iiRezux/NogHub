@@ -721,6 +721,7 @@ do
 	end
 	
 	function section:addToggle(title, default, flag, callback)
+        Flag = flag
 		local toggle = utility:Create("ImageButton", {
 			Name = "Toggle",
 			Parent = self.container,
@@ -777,13 +778,6 @@ do
 		--self:Resize()
 		
 		local active = default
-        local thehook
-        thehook = hookmetamethod(self, "__index", function(s,t,v)
-            if s == toggle and t == "Flag" then
-                return flag
-            end
-            return thehook(s, t,v)
-        end)
 		self:updateToggle(toggle, nil, active)
 		
 		toggle.MouseButton1Click:Connect(function()
