@@ -1844,7 +1844,7 @@ do
 			self:Resize()
 		end)
 
-        if flag then
+        if flag ~= nil and flag ~= "" then
             utility:Create("StringValue", {
                 Name = "Flag",
                 Parent = dropdown,
@@ -2215,4 +2215,6 @@ do
 		end
 	end
 end
+
+print("dino was here :\)")
 return library
