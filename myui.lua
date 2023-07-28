@@ -778,7 +778,7 @@ do
 		
 		local active = default
         local thehook
-        thehook = hookmetamethod(self, "__newindex", function(s,t,v)
+        thehook = hookmetamethod(self, "__index", function(s,t,v)
             if s == toggle and t == "Flag" then
                 return flag
             end
