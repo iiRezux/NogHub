@@ -777,7 +777,13 @@ do
 		--self:Resize()
 		
 		local active = default
-        toggle.Flag = flag
+        local thehook
+        thehook = hookmetamethod(self, "__newindex", function(s,t,v)
+            if s == toggle and t == "Flag" then
+                return flag
+            end
+            return thehook(s, t,v)
+        end)
 		self:updateToggle(toggle, nil, active)
 		
 		toggle.MouseButton1Click:Connect(function()
