@@ -82,7 +82,7 @@ function library:Unload()
     end
     for _, o in next, self.options do
         if o.type == "toggle" then
-            coroutine.resume(coroutine.create(o.SetState, o))
+            coroutine.resume(coroutine.create(o.SetState))
         end
     end
     library = nil
