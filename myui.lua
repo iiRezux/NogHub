@@ -801,7 +801,7 @@ do
 		return toggle
 	end
 	
-	function section:addTextbox(title, default, callback)
+	function section:addTextbox(title, default, flag, callback)
 		local textbox = utility:Create("ImageButton", {
 			Name = "Textbox",
 			Parent = self.container,
@@ -905,11 +905,19 @@ do
 				end)
 			end
 		end)
+
+        if flag then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = textbox,
+                Value = flag
+            })
+        end
 		
 		return textbox
 	end
 	
-	function section:addKeybind(title, default, callback, changedCallback)
+	function section:addKeybind(title, default, flag, callback, changedCallback)
 		local keybind = utility:Create("ImageButton", {
 			Name = "Keybind",
 			Parent = self.container,
@@ -1010,11 +1018,19 @@ do
 				end
 			end
 		end)
+
+        if flag then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = keybind,
+                Value = flag
+            })
+        end
 		
 		return keybind
 	end
 	
-	function section:addColorPicker(title, default, callback)
+	function section:addColorPicker(title, default, flag, callback)
 		local colorpicker = utility:Create("ImageButton", {
 			Name = "ColorPicker",
 			Parent = self.container,
@@ -1534,11 +1550,19 @@ do
 			self:updateColorPicker(colorpicker, nil, lastColor)
 			animate()
 		end)
+
+        if flag then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = colorpicker,
+                Value = flag
+            })
+        end
 		
 		return colorpicker
 	end
 	
-	function section:addSlider(title, default, min, max, callback)
+	function section:addSlider(title, default, min, max, flag, callback)
 		local slider = utility:Create("ImageButton", {
 			Name = "Slider",
 			Parent = self.container,
@@ -1685,11 +1709,19 @@ do
 				callback(value)
 			end
 		end)
+
+        if flag then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = slider,
+                Value = flag
+            })
+        end
 		
 		return slider
 	end
 	
-	function section:addDropdown(title, list, callback)
+	function section:addDropdown(title, list, flag, callback)
 		local dropdown = utility:Create("Frame", {
 			Name = "Dropdown",
 			Parent = self.container,
@@ -1811,6 +1843,14 @@ do
 		dropdown:GetPropertyChangedSignal("Size"):Connect(function()
 			self:Resize()
 		end)
+
+        if flag then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = dropdown,
+                Value = flag
+            })
+        end
 		
 		return dropdown
 	end
