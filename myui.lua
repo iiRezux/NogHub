@@ -772,8 +772,14 @@ do
 				})
 			})
 		})
-		
-		table.insert(self.modules, toggle)
+        
+        local metatable = {
+            ["Title"] = title,
+            ["Default"] = default,
+            ["Flag"] = flag
+        }
+
+		table.insert(self.modules, metatable)
 		--self:Resize()
 		
 		local active = default
@@ -789,12 +795,6 @@ do
 				end)
 			end
 		end)
-
-        local metatable = {
-            ["Title"] = title,
-            ["Default"] = default,
-            ["Flag"] = flag
-        }
 		
 		return metatable
 	end
