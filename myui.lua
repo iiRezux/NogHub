@@ -721,7 +721,6 @@ do
 	end
 	
 	function section:addToggle(title, default, flag, callback)
-        Flag = flag
 		local toggle = utility:Create("ImageButton", {
 			Name = "Toggle",
 			Parent = self.container,
@@ -790,6 +789,12 @@ do
 				end)
 			end
 		end)
+
+        local metatable = {}
+
+        metatable.Flag = flag
+
+        setmetatable(toggle, { __index = metatable })
 		
 		return toggle
 	end
