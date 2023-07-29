@@ -1894,7 +1894,7 @@ do
 				list = #list ~= 0 and list
                 
                 if dropdown:FindFirstChild("Flag") then
-                    dropdown.Flag.Option.Value = search.TextBox.Text
+                    dropdown.Flag.Option.Value = dropdown.Search.TextBox.Text
                 end
 				
 				self:updateDropdown(dropdown, nil, list, callback)
