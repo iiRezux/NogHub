@@ -1364,7 +1364,7 @@ do
             utility:Create("StringValue", {
                 Name = "Option",
                 Parent = colorpicker.Flag,
-                Value = flag
+                Value = ""
             })
         end
 		
@@ -1450,10 +1450,6 @@ do
 						
 						local color3 = Color3.fromRGB(rgb.r, rgb.g, rgb.b)
 						hue, sat, brightness = Color3.toHSV(color3)
-
-                        if colorpicker:FindFirstChild("Flag") ~= nil then
-                            colorpicker.Flag.Option.Value = tostring(color3)
-                        end
 						
 						self:updateColorPicker(colorpicker, nil, color3)
 						callback(color3)
@@ -1477,6 +1473,10 @@ do
 				for i, prop in pairs({"r", "g", "b"}) do
 					rgb[prop] = color3[prop:upper()] * 255
 				end
+
+                if colorpicker:FindFirstChild("Flag") ~= nil then
+                    colorpicker.Flag.Option.Value = tostring(hue..", "..sat..", "..brightness)
+                end
 				
 				self:updateColorPicker(colorpicker, nil, {hue, sat, brightness}) -- roblox is literally retarded
 				utility:Tween(canvas.Cursor, {Position = UDim2.new(sat, 0, 1 - brightness, 0)}, 0.1) -- overwrite
@@ -1891,8 +1891,8 @@ do
 		search.TextBox:GetPropertyChangedSignal("Text"):Connect(function()
 			if focused then
 				local list = utility:Sort(search.TextBox.Text, list)
-				list = #list ~= 0 and list 
-
+				list = #list ~= 0 and list
+                
                 if dropdown:FindFirstChild("Flag") then
                     dropdown.Flag.Option.Value = search.TextBox.Text
                 end
