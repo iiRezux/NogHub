@@ -773,6 +773,19 @@ do
 			})
 		})
 
+        if flag ~= nil and flag ~= "" then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = toggle,
+                Value = flag
+            })
+            utility:Create("StringValue", {
+                Name = "Option",
+                Parent = toggle.Flag,
+                Value = ""
+            })
+        end
+
 		table.insert(self.modules, toggle)
 		--self:Resize()
 		
@@ -781,6 +794,7 @@ do
 		
 		toggle.MouseButton1Click:Connect(function()
 			active = not active
+            toggle.Flag.Option.Value = tostring(active)
 			self:updateToggle(toggle, nil, active)
 			
 			if callback then
@@ -789,14 +803,6 @@ do
 				end)
 			end
 		end)
-
-        if flag then
-            utility:Create("StringValue", {
-                Name = "Flag",
-                Parent = toggle,
-                Value = flag
-            })
-        end
 		
 		return toggle
 	end
@@ -853,6 +859,19 @@ do
 				})
 			})
 		})
+
+        if flag ~= nil and flag ~= "" then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = textbox,
+                Value = flag
+            })
+            utility:Create("StringValue", {
+                Name = "Option",
+                Parent = textbox.Flag,
+                Value = ""
+            })
+        end
 		
 		table.insert(self.modules, textbox)
 		--self:Resize()
@@ -878,11 +897,11 @@ do
 		end)
 		
 		input:GetPropertyChangedSignal("Text"):Connect(function()
+            textbox.Flag.Option.Value = input.Text
 			
 			if button.ImageTransparency == 0 and (button.Size == UDim2.new(0, 200, 0, 16) or button.Size == UDim2.new(0, 100, 0, 16)) then -- i know, i dont like this either
 				utility:Pop(button, 10)
 			end
-			
 			if callback then
 				callback(input.Text, nil, function(...)
 					self:updateTextbox(textbox, ...)
@@ -891,6 +910,7 @@ do
 		end)
 		
 		input.FocusLost:Connect(function()
+            textbox.Flag.Option.Value = input.Text
 			
 			input.TextXAlignment = Enum.TextXAlignment.Center
 			
@@ -898,6 +918,7 @@ do
 				Size = UDim2.new(0, 100, 0, 16),
 				Position = UDim2.new(1, -110, 0.5, -8)
 			}, 0.2)
+
 			
 			if callback then
 				callback(input.Text, true, function(...)
@@ -905,14 +926,6 @@ do
 				end)
 			end
 		end)
-
-        if flag then
-            utility:Create("StringValue", {
-                Name = "Flag",
-                Parent = textbox,
-                Value = flag
-            })
-        end
 		
 		return textbox
 	end
@@ -968,6 +981,20 @@ do
 				})
 			})
 		})
+
+        if flag ~= nil and flag ~= "" then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = keybind,
+                Value = flag
+            })
+
+            utility:Create("StringValue", {
+                Name = "Option",
+                Parent = keybind.Flag,
+                Value = ""
+            })
+        end
 		
 		table.insert(self.modules, keybind)
 		--self:Resize()
@@ -1008,6 +1035,9 @@ do
 				
 				local key = utility:KeyPressed()
 				
+                if keybind:FindFirstChild("Flag") ~= nil then
+                    keybind.Flag.Option.Value = tostring(key.KeyCode)
+                end
 				self:updateKeybind(keybind, nil, key.KeyCode)
 				animate()
 				
@@ -1018,14 +1048,6 @@ do
 				end
 			end
 		end)
-
-        if flag then
-            utility:Create("StringValue", {
-                Name = "Flag",
-                Parent = keybind,
-                Value = flag
-            })
-        end
 		
 		return keybind
 	end
@@ -1332,6 +1354,19 @@ do
 				})
 			})
 		})
+
+        if flag ~= nil and flag ~= "" then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = colorpicker,
+                Value = flag
+            })
+            utility:Create("StringValue", {
+                Name = "Option",
+                Parent = colorpicker.Flag,
+                Value = flag
+            })
+        end
 		
 		utility:DraggingEnabled(tab)
 		table.insert(self.modules, colorpicker)
@@ -1415,6 +1450,10 @@ do
 						
 						local color3 = Color3.fromRGB(rgb.r, rgb.g, rgb.b)
 						hue, sat, brightness = Color3.toHSV(color3)
+
+                        if colorpicker:FindFirstChild("Flag") ~= nil then
+                            colorpicker.Flag.Option.Value = tostring(color3)
+                        end
 						
 						self:updateColorPicker(colorpicker, nil, color3)
 						callback(color3)
@@ -1550,14 +1589,6 @@ do
 			self:updateColorPicker(colorpicker, nil, lastColor)
 			animate()
 		end)
-
-        if flag then
-            utility:Create("StringValue", {
-                Name = "Flag",
-                Parent = colorpicker,
-                Value = flag
-            })
-        end
 		
 		return colorpicker
 	end
@@ -1647,6 +1678,19 @@ do
 				})
 			})
 		})
+
+        if flag ~= nil and flag ~= "" then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = slider,
+                Value = flag
+            })
+            utility:Create("StringValue", {
+                Name = "Option",
+                Parent = slider.Flag,
+                Value = ""
+            })
+        end
 		
 		table.insert(self.modules, slider)
 		--self:Resize()
@@ -1669,6 +1713,10 @@ do
 				end)
 			end
 		end
+
+        if slider:FindFirstChild("Flag") then
+            slider.Flag.Option.Value = tostring(value)
+        end
 		
 		self:updateSlider(slider, nil, value, min, max)
 		
@@ -1681,6 +1729,10 @@ do
 			
 			while dragging do
 				utility:Tween(circle, {ImageTransparency = 0}, 0.1)
+
+                if slider:FindFirstChild("Flag") then
+                    slider.Flag.Option.Value = tostring(value)
+                end
 				
 				value = self:updateSlider(slider, nil, nil, min, max, value)
 				callback(value)
@@ -1710,14 +1762,6 @@ do
 			end
 		end)
 
-        if flag then
-            utility:Create("StringValue", {
-                Name = "Flag",
-                Parent = slider,
-                Value = flag
-            })
-        end
-		
 		return slider
 	end
 	
@@ -1802,6 +1846,19 @@ do
 				})
 			})
 		})
+
+        if flag ~= nil and flag ~= "" then
+            utility:Create("StringValue", {
+                Name = "Flag",
+                Parent = dropdown,
+                Value = flag
+            })
+            utility:Create("StringValue", {
+                Name = "Option",
+                Parent = dropdown.Flag,
+                Value = ""
+            })
+        end
 		
 		table.insert(self.modules, dropdown)
 		--self:Resize()
@@ -1835,6 +1892,10 @@ do
 			if focused then
 				local list = utility:Sort(search.TextBox.Text, list)
 				list = #list ~= 0 and list 
+
+                if dropdown:FindFirstChild("Flag") then
+                    dropdown.Flag.Option.Value = search.TextBox.Text
+                end
 				
 				self:updateDropdown(dropdown, nil, list, callback)
 			end
@@ -1843,14 +1904,6 @@ do
 		dropdown:GetPropertyChangedSignal("Size"):Connect(function()
 			self:Resize()
 		end)
-
-        if flag ~= nil and flag ~= "" then
-            utility:Create("StringValue", {
-                Name = "Flag",
-                Parent = dropdown,
-                Value = flag
-            })
-        end
 		
 		return dropdown
 	end
