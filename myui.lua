@@ -756,19 +756,6 @@ function library:init()
         self.open = bool;
         screenGui.Enabled = bool;
 
-        if bool and library.flags.disablemenumovement then
-            actionservice:BindAction(
-                'FreezeMovement',
-                function()
-                    return Enum.ContextActionResult.Sink
-                end,
-                false,
-                unpack(Enum.PlayerActions:GetEnumItems())
-            )
-        else
-            actionservice:UnbindAction('FreezeMovement');
-        end
-
         for _,window in next, self.windows do
             window:SetOpen(bool);
         end
